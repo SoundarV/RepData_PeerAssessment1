@@ -29,30 +29,31 @@ input <- read.csv("activity.csv")
 
 Determine mean total number of steps taken per day
         Ignore rows with incomplete data
-  1. Make a histogram of total number of steps taken per day
-```{r, histTotSteps, fig.width=7,fig.height=6, echo=TRUE}
-        input <- input[complete.cases(input),]
-
-                total_steps_daily <- by(input$steps,input$date,sum)
         
-                hist(total_steps_daily, xlab = "Total Steps per day", ylab = "Number of Steps",
-                        main = "Total Steps Taken per Day")
-        
-```
+1. Make a histogram of total number of steps taken per day
+    ```{r, histTotSteps, fig.width=7,fig.height=6, echo=TRUE}
+            input <- input[complete.cases(input),]
+    
+                    total_steps_daily <- by(input$steps,input$date,sum)
+            
+                    hist(total_steps_daily, xlab = "Total Steps per day", ylab = "Number of Steps",
+                            main = "Total Steps Taken per Day")
+            
+    ```
 
 
-  2. Calculate mean and median total number of steps per day
-``` {r,meanDaily,echo=TRUE}
-        
-                library(dplyr)
-                a <- group_by(input,date)
-                input_by_date <- summarize(a, mean_steps = mean(steps),
-                                  median_steps = median(steps),
-                                  n=n())
-                                
-                input_by_date
-
-```
+2. Calculate mean and median total number of steps per day
+    ``` {r,meanDaily,echo=TRUE}
+            
+                    library(dplyr)
+                    a <- group_by(input,date)
+                    input_by_date <- summarize(a, mean_steps = mean(steps),
+                                      median_steps = median(steps),
+                                      n=n())
+                                    
+                    input_by_date
+    
+    ```
 
 
 
@@ -60,102 +61,101 @@ Determine mean total number of steps taken per day
 
 
 #What is the Average Daily Pattern
-         1. Make a time-series plot (type = 'l') of 5 minute intervals and average number of steps
-               taken, average across all days
-```{r,avgDailyPlot,fig.width=7,fig.height=6,echo=TRUE}
+  1. Make a time-series plot (type = 'l') of 5 minute intervals and average number of steps taken, average across all days
+    ```{r,avgDailyPlot,fig.width=7,fig.height=6,echo=TRUE}
+    
+                    library(dplyr)                
+                    b <- group_by(input,interval)                
+                    avg_steps_interval <- summarize(b,mean_steps = mean(steps),n=n())
+                     
+                    
+                            plot(avg_steps_interval$interval, avg_steps_interval$mean_steps,type = "l", 
+                                 xlab = "Intervals", ylab = "Avg. number of steps",
+                                    main = "Average Steps in each Interval")
+                    
+    ```
 
-                library(dplyr)                
-                b <- group_by(input,interval)                
-                avg_steps_interval <- summarize(b,mean_steps = mean(steps),n=n())
+  2. Which 5-minute interval on average across all days contains the maximum number of steps?
                 
-                
-                        plot(avg_steps_interval$interval, avg_steps_interval$mean_steps,type = "l", 
-                             xlab = "Intervals", ylab = "Avg. number of steps",
-                                main = "Average Steps in each Interval")
-                
-```
-
-2. Which 5-minute interval on average across all days contains the maximum number of steps?
-                
-```{r,avgInt,echo=TRUE}
-        
-                max_steps <- subset(avg_steps_interval,mean_steps == max(avg_steps_interval$mean_steps))
-                max_steps$interval
-
-```
+    ```{r,avgInt,echo=TRUE}
+            
+                    max_steps <- subset(avg_steps_interval,mean_steps == max(avg_steps_interval$mean_steps))
+                    max_steps$interval
+    
+    ```
 
 
 ## Imputing missing values
 
   1. Calculate number of missing values in the dataset.Read input file
 
-```{r,imputData, echo=TRUE}
-                input <- read.csv("activity.csv")
-                # Calculate number of incomplete rows
-                incomplete_input <- input[!complete.cases(input),]
-                incomplete_row_count <- nrow(incomplete_input)
-                # Total number of missing values in dataset:
-                incomplete_row_count
-```
+    ```{r,imputData, echo=TRUE}
+                    input <- read.csv("activity.csv")
+                    # Calculate number of incomplete rows
+                    incomplete_input <- input[!complete.cases(input),]
+                    incomplete_row_count <- nrow(incomplete_input)
+                    # Total number of missing values in dataset:
+                    incomplete_row_count
+    ```
   
   
   2. Fill in missing values in the dataset - Imput values to replace NA
-      ```{r,fillmissingvalues, echo=TRUE}
-                mean_steps <- mean(input$steps, na.rm = TRUE)
-                incomplete_input$steps <- mean_steps
-                # All steps with missing values will have the mean of steps for all days
-                complete_input <- input[complete.cases(input),]
-                
-                input <- merge(complete_input, incomplete_input,all=TRUE)
+    ```{r,fillmissingvalues, echo=TRUE}
+              mean_steps <- mean(input$steps, na.rm = TRUE)
+              incomplete_input$steps <- mean_steps
+              # All steps with missing values will have the mean of steps for all days
+              complete_input <- input[complete.cases(input),]
+              
+              input <- merge(complete_input, incomplete_input,all=TRUE)
     ```
     
   3.  Verify there are no incomplete cases - zero indicates all incomplete fields have successfully imputted values
-     ```{r,echo=TRUE}
-                input[!complete.cases(input),]
-                        
-```
+    ```{r,echo=TRUE}
+              input[!complete.cases(input),]
+                      
+    ```
         
   4. Create histogram of total steps each day.  Calculate Mean and Median with imputted values.
-```{r,histTotalSteps, fig.width=7, fig.height=6}
-
-                total_steps_daily <- by(input$steps,input$date,sum)
-                hist(total_steps_daily, xlab = "Total Steps per day", ylab = "Number of Steps",
-                                main = "Total Steps per Day (with imputted data)")    
-
-```
+  ```{r,histTotalSteps, fig.width=7, fig.height=6}
+  
+                  total_steps_daily <- by(input$steps,input$date,sum)
+                  hist(total_steps_daily, xlab = "Total Steps per day", ylab = "Number of Steps",
+                                  main = "Total Steps per Day (with imputted data)")    
+  
+  ```
         
-        a. Calculate mean and median total number of steps per day
-```{r,meanMedian,echo=TRUE}
-        
-                library(dplyr)
-                a <- group_by(input,date)
-                input_by_date <- summarize(a, mean_steps = mean(steps),
-                                  median_steps = median(steps),
-                                  n=n())
-                input_by_date
-
-```
+  a. Calculate mean and median total number of steps per day
+  ```{r,meanMedian,echo=TRUE}
+          
+                  library(dplyr)
+                  a <- group_by(input,date)
+                  input_by_date <- summarize(a, mean_steps = mean(steps),
+                                    median_steps = median(steps),
+                                    n=n())
+                  input_by_date
+  
+  ```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Categorize dates to "Weekday" or "Weekend" and plot on separate panels
-```{r,weekday,echo=TRUE}
-        ## Insert column to determine is a date is 'Weekday" or"Weekend"
-        input$week <- weekdays(as.Date(input$date))
-
-        wd <- c("Monday","Tuesday","Wednesday","Thursday","Friday")
-        we <- c("Saturday","Sunday")
-        n <- nrow(input)
-        for (i in 1:n) {
-                if (input$week[i] %in% we) {
-                        input$weekd[i] <- "weekend"
-                        } else {
-                        input$weekd[i] <- "weekday"        
-                        }
-        }
-                
-```
+  ```{r,weekday,echo=TRUE}
+          ## Insert column to determine is a date is 'Weekday" or"Weekend"
+          input$week <- weekdays(as.Date(input$date))
+  
+          wd <- c("Monday","Tuesday","Wednesday","Thursday","Friday")
+          we <- c("Saturday","Sunday")
+          n <- nrow(input)
+          for (i in 1:n) {
+                  if (input$week[i] %in% we) {
+                          input$weekd[i] <- "weekend"
+                          } else {
+                          input$weekd[i] <- "weekday"        
+                          }
+          }
+                  
+  ```
 
 Plot for Weekday and Weekend measured values
 ```{r,plotWeekday,fig.width=7, fig.height=6}
@@ -169,4 +169,12 @@ Plot for Weekday and Weekend measured values
                             layout=c(1,2),
                             main = "Mean Steps per day",
                             xlab = "Interval", ylab = "Number of steps")
+                            
 ```
+    
+Commit your PA1_template.md and PA1_template.html files produced by processing your R markdown file with knit2html() function in R (from the knitr package)
+    ```{r}
+    library("knitr")
+    knit2html(input   = "PA1_template.Rmd", 
+          output  = "test-abcd.html")
+      ```
